@@ -9,7 +9,6 @@ from plotly.subplots import make_subplots
 import plotly.graph_objs as go
 
 import datetime
-import driftpy
 import mango
 import requests
 
