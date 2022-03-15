@@ -2,7 +2,7 @@ aiodns==3.0.0
 aiohttp==3.8.1
 aiosignal==1.2.0
 altair==4.2.0
-anchorpy==0.6.5
+anchorpy==0.8.0
 ansi2html==1.7.0
 anyio==3.4.0
 apischema==0.16.6
