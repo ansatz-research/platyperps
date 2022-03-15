@@ -13,15 +13,17 @@ import driftpy
 import mango
 import requests
 
-from driftpy.constants.markets import MARKETS
+# from driftpy.constants.markets import MARKETS
+assets = ['SOL', 'BTC', 'ETH', 'LUNA', 'AVAX', 'BNB', 'MATIC', 'ATOM', 'DOT', 'ADA', 'ALGO', 'FTT', 'LTC']
+MARKET_INDEX_TO_PERP = {i: ast+'-PERP' for i,ast in enumerate(assets)}
+MARKET_PERP_TO_INDEX = {v: k for k,v in MARKET_INDEX_TO_PERP.items()}
 
-
-MARKET_INDEX_TO_PERP = {i: MARKETS[i].symbol for i in range(len(MARKETS))}
-MARKET_PERP_TO_INDEX = {MARKETS[i].symbol: i for i in range(len(MARKETS))}
+# MARKET_INDEX_TO_PERP = {i: MARKETS[i].symbol for i in range(len(MARKETS))}
+# MARKET_PERP_TO_INDEX = {MARKETS[i].symbol: i for i in range(len(MARKETS))}
 
 FUNDING_SCALE = 1
 
-@st.cache(ttl=60)
+@st.cache(ttl=600)
 def make_funding_table(drift):
     # drift_markets = {v: str(k) for k,v in driftsummary.MARKET_INDEX_TO_PERP.items()}
     ASSETS=[]
