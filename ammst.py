@@ -22,7 +22,7 @@ MARKET_PERP_TO_INDEX = {v: k for k,v in MARKET_INDEX_TO_PERP.items()}
 
 FUNDING_SCALE = 1
 
-@st.cache(ttl=600)
+@st.cache(ttl=600, allow_output_mutation=True)
 def make_funding_table(drift):
     # drift_markets = {v: str(k) for k,v in driftsummary.MARKET_INDEX_TO_PERP.items()}
     ASSETS=[]
@@ -141,9 +141,6 @@ def make_funding_table(drift):
     funding_rate_df.index.name = "Protocol"
     funding_rate_df.columns = ASSETS
     funding_rate_df = funding_rate_df * 100
-    for col in funding_rate_df.columns:
-        funding_rate_df[col] = funding_rate_df[col].map("{:,.5f}%".format).replace('nan%','')
-
     # funding_rate_df = funding_rate_df.reset_index()
 
     # make volume table too
@@ -197,9 +194,8 @@ def make_funding_table(drift):
             "Mango",
             "Drift"
         ]
-    for col in oi.columns:
-        oi[col] = oi[col].astype(float).map("{:,.1f}".format)
-    oi = oi.replace('nan','')
+
+
     oi.index.name = 'Protocol'
     oi.columns = list(ASSETS)
 
@@ -214,8 +210,6 @@ def make_funding_table(drift):
         ],
     )
     # volumes.iloc[[0], :] *= np.array([[140, 42000, 3600, 66, 84, 520, 2.13]])  # todo lol
-    for col in volumes.columns:
-        volumes[col] = volumes[col].astype(float).map("${:,.0f}".format).replace('$nan','')
     # volumes = volumes.reset_index()
     volumes.index.name = "Protocol"
     volumes.columns = list(ASSETS)
@@ -283,7 +277,7 @@ context = mango_py()
 # MARKET = "SOL-PERP"
 
 """
-# Platyperps
+# Platyperps v2
 """
 
 
@@ -296,15 +290,49 @@ drift_market_summary = pd.read_csv(msum, index_col=[0])
 drift_market_summary.columns = [int(x) for x in drift_market_summary.columns]
 
 tab = st.sidebar.radio(
-    "PlatyPerps",
+    "Select Tab:",
     ('Overview', 'Price', 'Liquidity', 'About', 'Drift', 'Mango'))
 
 if tab == 'Overview':
     # st.table(drift_market_summary)
     funding_rate_df, volumes, oi, ftx_px = make_funding_table(drift_market_summary)
-    st.table(funding_rate_df)
-    st.table(volumes)
-    st.table(oi)
+
+    # function for set text color of positive
+    # values in Dataframes
+    def color_positive_green(val):
+        """
+        Takes a scalar and returns a string with
+        the css property `'color: green'` for positive
+        strings, black otherwise.
+        """
+        if val > 0:
+            color = 'darkred'
+        elif val < 0:
+            color = 'green'
+        else:
+            color = 'black'
+        return 'color: %s' % color
+
+    # for col in funding_rate_df.columns:
+    #     funding_rate_df[col] = funding_rate_df[col].astype(float).map("{:,.5f}%".format).replace('nan%','')
+    # for col in oi.columns:
+    #     oi[col] = oi[col].astype(float).map("{:,.1f}".format)
+    # oi = oi.replace('nan','')
+    
+    # for col in volumes.columns:
+    #     volumes[col] = volumes[col].astype(float).map("${:,.0f}".format).replace('$nan','')
+
+    all_options = list(funding_rate_df.columns)
+    options = st.multiselect('Markets', all_options, all_options)
+    
+    st.text('1h Funding Rate')
+    st.dataframe(funding_rate_df[options].astype(float).style.applymap(color_positive_green).format("{:.5%}", na_rep=" "))
+    pd.set_option("display.precision", 0)
+    st.text('24h Volume')
+    st.dataframe(volumes[options].astype(float).style.format(precision=0, thousands=",", na_rep=" "))
+    pd.set_option("display.precision", 1)
+    st.text('Open Interest')
+    st.dataframe(oi[options].astype(float).style.format(precision=1, thousands=",", na_rep=" "))
 
 if tab not in ['About', 'Overview']:
     MARKET = st.selectbox("Select a Market:", MARKET_INDEX_TO_PERP.values())
