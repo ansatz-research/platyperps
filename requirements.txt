@@ -22,7 +22,7 @@ blinker==1.4
 borsh-construct==0.1.0
 Brotli==1.0.9
 cachetools==4.2.4
-ccxt==1.62.38
+ccxt==4.1.29
 certifi==2021.10.8
 cffi==1.15.0
 charset-normalizer==2.0.8
